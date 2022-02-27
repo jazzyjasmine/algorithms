@@ -4,12 +4,69 @@ class Solution:
     """
     Minimum Spanning Tree (MST)
 
+    Kruskal's algorithm
+
+    Time complexity: O(ElgV)
+    """
+    # 1584. Min Cost to Connect All Points
+    def minCostConnectPointsKruskal(self, points: List[List[int]]) -> int:
+        res = 0
+        
+        parents, ranks = self.makeset(len(points))
+        
+        edges = self.get_all_edges(points)
+        edges.sort()
+        
+        for edge in edges:
+            weight, u, v = edge[0], edge[1], edge[2]
+            u_root = self.find(parents, u)
+            v_root = self.find(parents, v)
+            if u_root != v_root:
+                res += weight
+                self.union(u_root, v_root, parents, ranks)
+        
+        return res
+    
+    
+    def union(self, x, y, parents, ranks):
+        if ranks[x] > ranks[y]:
+            parents[y] = x
+        else:
+            parents[x] = y
+            if ranks[x] == ranks[y]:
+                # increase rank only when ties
+                ranks[y] += 1
+            
+    
+    def find(self, parents, node):
+        while parents[node] != node:
+            node = parents[node]
+        return node
+        
+    
+    def makeset(self, n):
+        return [i for i in range(n)], [0 for i in range(n)]
+    
+    
+    def get_all_edges(self, points):
+        edges = []
+        n = len(points)
+        for i in range(n):
+            for j in range(i + 1, n):
+                weight = self.get_manhattan_distance(i, j, points)
+                edges.append((weight, i, j))
+        return edges
+    
+
+    """
+    Minimum Spanning Tree (MST)
+
     Prim's algorithm
 
     Time complexity: O((V + E)lgV) = O(ElgV)
     """
     # 1584. Min Cost to Connect All Points
-    def minCostConnectPoints(self, points: List[List[int]]) -> int:
+    def minCostConnectPointsPrim(self, points: List[List[int]]) -> int:
         n = len(points)
         
         # key: node, value: min weight of edge connecting node to current mst
