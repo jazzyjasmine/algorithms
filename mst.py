@@ -171,7 +171,10 @@ class Solution:
                 i_root = self.find(parents, i)
                 j_root = self.find(parents, j)
                 
-                # need to check if the roots are the same because the edge might already be used by a previous vertex, if so, the current node is already in the same connected component with the previous vertex (the other endpoint of the edge)
+                # need to check if the roots are the same because the edge might already be used by a previous vertex
+                # if so, the current node is already in the same connected component with the previous vertex (the other endpoint of the edge)
+                # example: {(0,1,4),(3,1,3),(2,1,9),(0,2,13),(2,3,10),(0,3,7)} format: (u,v,weight)
+                # node 1 and node 3 have the same min_edge
                 if i_root != j_root:
                     self.union(i_root, j_root, parents, ranks)
                     mst_weight += weight
