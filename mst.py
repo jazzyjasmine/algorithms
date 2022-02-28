@@ -37,11 +37,11 @@ class Solution:
                 # increase rank only when ties
                 ranks[y] += 1
             
-    
-    def find(self, parents, node):
-        while parents[node] != node:
-            node = parents[node]
-        return node
+    # see a revised version of find in Boruvka's algorithm
+    # def find(self, parents, node):
+    #     while parents[node] != node:
+    #         node = parents[node]
+    #     return node
         
     
     def makeset(self, n):
@@ -110,3 +110,82 @@ class Solution:
     
     def get_manhattan_distance(self, i, j, points):
         return abs(points[i][0] - points[j][0]) + abs(points[i][1] - points[j][1])
+
+
+    """
+    Minimum Spanning Tree (MST)
+
+    Boruvka's algorithm
+
+    O((V+E)lgV) = O(ElgV)
+
+    Reference: https://www.geeksforgeeks.org/boruvkas-algorithm-greedy-algo-9/
+    """
+    def minCostConnectPointsBoruvka(self, points: List[List[int]]) -> int:
+        n = len(points)
+        
+        parents, ranks = self.makeset(n)
+        edges = self.get_all_edges(points)
+        
+        # store the min edge with one endpoint in the connected component
+        # rooted in "index", and one endpoint outside the connected component
+        min_edges = [-1 for i in range(n)]
+        
+        # the number of trees is n initially, treat each vertex as a tree
+        tree_num = n
+        
+        # the sum of weight in mst
+        mst_weight = 0
+        
+        # loop until we only have one tree, which is the mst
+        while tree_num > 1:
+            # iterate through all edges
+            for (weight, i, j) in edges:
+                # find the root of the connected component that i is in
+                i_root = self.find(parents, i)
+                # find the root of the connected component that j is in
+                j_root = self.find(parents, j)
+                
+                # if the edge does not make a cycle, i.e. endpoints
+                # are in different connected components
+                if i_root != j_root:
+                    # maintain the min_edges by updating
+                    # update only at start or the new edge's weight is less than the existed weight
+                    if min_edges[i_root] == -1 or min_edges[i_root][0] > weight:
+                        min_edges[i_root] = (weight, i, j)
+                    
+                    if min_edges[j_root] == -1 or min_edges[j_root][0] > weight:
+                        min_edges[j_root] = (weight, i, j)
+            
+            # iterate through all vertices
+            # connect the current connected components by the min_edge of their roots
+            # for a connected component, use the min_edge of its root (min_edges[root]) to connect
+            # to another connected component and thus decrease the number of trees (connected components)
+            for node, min_edge in enumerate(min_edges):
+                # if the node is not a root, ignore
+                if min_edge == -1:
+                    continue
+                    
+                weight, i, j = min_edge[0], min_edge[1], min_edge[2]
+                
+                i_root = self.find(parents, i)
+                j_root = self.find(parents, j)
+                
+                # need to check if the roots are the same because the edge might already be used by a previous vertex, if so, the current node is already in the same connected component with the previous vertex (the other endpoint of the edge)
+                if i_root != j_root:
+                    self.union(i_root, j_root, parents, ranks)
+                    mst_weight += weight
+                    # decrease the number of trees after each union behavior
+                    tree_num -= 1
+            
+            # IMPORTANT: clean up the min_edges
+            min_edges = [-1 for i in range(n)]
+            
+        return mst_weight
+            
+    
+    def find(self, parents, node):
+        while parents[node] != node:
+            parents[node] = parents[parents[node]]  # reduce the time complexity for find to O(1)
+            node = parents[node]
+        return node
