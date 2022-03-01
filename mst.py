@@ -1,6 +1,7 @@
 import heapq
 
-class Solution:
+class Solution1584:
+    # 1584. Min Cost to Connect All Points
     """
     Minimum Spanning Tree (MST)
 
@@ -8,7 +9,6 @@ class Solution:
 
     Time complexity: O(ElgV)
     """
-    # 1584. Min Cost to Connect All Points
     def minCostConnectPointsKruskal(self, points: List[List[int]]) -> int:
         res = 0
         
@@ -65,7 +65,6 @@ class Solution:
 
     Time complexity: O((V + E)lgV) = O(ElgV)
     """
-    # 1584. Min Cost to Connect All Points
     def minCostConnectPointsPrim(self, points: List[List[int]]) -> int:
         n = len(points)
         
@@ -192,3 +191,85 @@ class Solution:
             parents[node] = parents[parents[node]]  # reduce the time complexity for find to O(1)
             node = parents[node]
         return node
+
+
+class Solution1135:
+    # 1135. Connecting Cities With Minimum Cost
+    """
+    Kruskal's algorithm
+    """
+    def minimumCostKruskal(self, n: int, connections: List[List[int]]) -> int:
+        parents, ranks = self.makeset(n)
+        
+        connections.sort(key=lambda x: x[2])
+        
+        mst_weight = 0
+        
+        for u, v, weight in connections:
+            u_root = self.find(u, parents)
+            v_root = self.find(v, parents)
+            if u_root != v_root:
+                mst_weight += weight
+                self.union(u_root, v_root, parents, ranks)
+            
+        root_num = len([i for i in parents if parents[i] == i])
+        
+        return mst_weight if root_num == 1 else -1
+        
+    def makeset(self, n):
+        return {i: i for i in range(1, n + 1)}, {i: 0 for i in range(1, n + 1)}
+    
+    def find(self, u, parents):
+        while parents[u] != u:
+            parents[u] = parents[parents[u]] # make find O(1) run time
+            u = parents[u]
+        return u
+    
+    def union(self, u_root, v_root, parents, ranks):
+        if ranks[u_root] < ranks[v_root]:
+            parents[u_root] = v_root
+        else:
+            parents[v_root] = u_root
+            if ranks[u_root] == ranks[v_root]:
+                ranks[u_root] += 1
+    
+    """
+    Prim's algorithm
+    """
+    def minimumCost(self, n: int, connections: List[List[int]]) -> int:
+        key = {i: float("inf") for i in range(1, n + 1)}
+        key[1] = 0
+        
+        visited = set()
+        
+        adjlist = self.get_adjlist(connections)
+        
+        heap = [(0, 1)]
+        
+        while heap:
+            min_weight, node = heapq.heappop(heap)
+            visited.add(node)
+            for neighbor, edge_weight in adjlist[node]:
+                if neighbor in visited:
+                    continue
+                    
+                if edge_weight < key[neighbor]:
+                    key[neighbor] = edge_weight
+                heapq.heappush(heap, (key[neighbor], neighbor))
+            
+        return sum(key.values()) if len(visited) == n else -1
+           
+    
+    def get_adjlist(self, connections):
+        adjlist = {}
+        for u, v, weight in connections:
+            self.add_to_adjlist(adjlist, u, v, weight)
+            self.add_to_adjlist(adjlist, v, u, weight)
+        return adjlist
+    
+    
+    def add_to_adjlist(self, adjlist, u, v, weight):
+        if u in adjlist:
+            adjlist[u].append((v, weight))
+        else:
+            adjlist[u] = [(v, weight)]
