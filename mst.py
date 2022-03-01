@@ -82,6 +82,10 @@ class Solution1584:
             # get the node with min weight to current mst and add it to mst (cut property)
             # we can also use an int variable to collect the "_" as the return result 
             _, node = heapq.heappop(heap)
+
+            if node in mst:
+                continue
+
             mst.add(node)
             
             # iterate through neighbors of node
@@ -240,7 +244,7 @@ class Solution1135:
         key = {i: float("inf") for i in range(1, n + 1)}
         key[1] = 0
         
-        visited = set()
+        mst = set()
         
         adjlist = self.get_adjlist(connections)
         
@@ -248,16 +252,19 @@ class Solution1135:
         
         while heap:
             min_weight, node = heapq.heappop(heap)
-            visited.add(node)
+            if node in mst:
+                continue
+            mst.add(node)
+
             for neighbor, edge_weight in adjlist[node]:
-                if neighbor in visited:
+                if neighbor in mst:
                     continue
                     
                 if edge_weight < key[neighbor]:
                     key[neighbor] = edge_weight
                 heapq.heappush(heap, (key[neighbor], neighbor))
             
-        return sum(key.values()) if len(visited) == n else -1
+        return sum(key.values()) if len(mst) == n else -1
            
     
     def get_adjlist(self, connections):
